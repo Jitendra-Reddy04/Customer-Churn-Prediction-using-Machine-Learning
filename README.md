@@ -77,12 +77,7 @@ Churn_practice/
 - **Prediction:**  
   The app preprocesses input, applies the trained model, and displays churn prediction with confidence.
 
-### 🖼️ Screenshot
 
-![App Screenshot](https://github.com/chanducn/Churn_Prediction/blob/60c59766eb52033bcd93d9b2e80c4b332f7f8d71/Churn_app_ss1.png)
-![App Screenshot](https://github.com/chanducn/Churn_Prediction/blob/60c59766eb52033bcd93d9b2e80c4b332f7f8d71/Churn_app_ss.png)
-
----
 
 ## 🏁 How to Run Locally
 
