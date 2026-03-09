@@ -1,0 +1,163 @@
+<!DOCTYPE html>
+<html>
+<head>
+
+<meta charset="UTF-8">
+<title>Prediction Result</title>
+
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+
+<link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+
+<style>
+
+.result-wrapper{
+max-width:700px;
+margin:auto;
+margin-top:40px;
+}
+
+.result-card{
+text-align:center;
+padding:40px;
+border-radius:20px;
+background:#1e1e2f;
+box-shadow:0 20px 40px rgba(0,0,0,0.6);
+}
+
+.result-icon{
+font-size:60px;
+margin-bottom:20px;
+}
+
+/* Progress bar */
+
+.progress{
+width:100%;
+max-width:500px;
+margin:auto;
+background:#333;
+border-radius:30px;
+overflow:hidden;
+margin-top:25px;
+}
+
+.progress-fill{
+height:18px;
+background:linear-gradient(90deg,#6a11cb,#2575fc);
+width:0;
+transition:width 1.5s ease;
+}
+
+/* Gauge */
+
+.chart-box{
+width:250px;
+margin:30px auto;
+}
+
+.button-group{
+margin-top:25px;
+}
+
+.button-group a{
+margin:10px;
+padding:12px 25px;
+border-radius:25px;
+background:#6a11cb;
+color:white;
+text-decoration:none;
+}
+
+</style>
+
+</head>
+
+<body>
+
+<button class="toggle-mode" onclick="toggleMode()">🌙 Toggle Mode</button>
+
+<div class="result-wrapper">
+
+<h2 style="text-align:center;">Prediction Result</h2>
+
+<div class="result-card">
+
+<div class="result-icon">
+
+{% if "CHURN" in output1 %}
+⚠️
+{% else %}
+✅
+{% endif %}
+
+</div>
+
+<h3>{{output1}}</h3>
+
+<p>{{output2}}</p>
+
+<div class="progress">
+<div id="progressBar" class="progress-fill"></div>
+</div>
+
+<p style="margin-top:10px;">Probability Score: <b>{{probability}}%</b></p>
+
+<div class="chart-box">
+<canvas id="probChart"></canvas>
+</div>
+
+<div class="button-group">
+
+<a href="/">⬅ Predict Again</a>
+
+<a href="/dashboard">📊 View Dashboard</a>
+
+</div>
+
+</div>
+
+</div>
+
+<script>
+
+function toggleMode(){
+document.body.classList.toggle("light-mode");
+}
+
+/* Animate progress bar */
+
+setTimeout(()=>{
+document.getElementById("progressBar").style.width="{{probability}}%";
+},300);
+
+
+/* Gauge Chart */
+
+const prob = {{probability}};
+
+new Chart(document.getElementById("probChart"),{
+
+type:'doughnut',
+
+data:{
+labels:['Risk','Safe'],
+datasets:[{
+data:[prob,100-prob],
+backgroundColor:['#ff5252','#4CAF50']
+}]
+},
+
+options:{
+cutout:'70%',
+plugins:{
+legend:{display:false}
+}
+}
+
+});
+
+</script>
+
+</body>
+</html>
