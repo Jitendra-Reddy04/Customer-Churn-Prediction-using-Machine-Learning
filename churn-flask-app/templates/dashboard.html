@@ -1,210 +1,331 @@
 <!DOCTYPE html>
 <html>
 <head>
-
 <meta charset="UTF-8">
-<title>Customer Churn Analytics Dashboard</title>
+<title>Customer Dashboard</title>
 
 <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 
-<link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+<style>
+body{
+    font-family:Arial;
+    background:#0f172a;
+    color:white;
+    margin:0;
+}
 
+h1{
+    text-align:center;
+    margin-top:20px;
+}
+
+/* GRID */
+.container{
+    width:90%;
+    margin:auto;
+    display:grid;
+    grid-template-columns:1fr 1fr;
+    gap:20px;
+}
+
+.full{
+    grid-column: span 2;
+}
+
+/* CARD */
+.card{
+    background:#1e293b;
+    padding:20px;
+    border-radius:15px;
+    box-shadow:0 8px 20px rgba(0,0,0,0.4);
+}
+
+/* CHART */
+.chart-container{
+    width:250px;
+    height:250px;
+    margin:auto;
+}
+
+/* -------------------- */
+/* HORIZONTAL DETAILS */
+/* -------------------- */
+
+.details-section{
+    display:flex;
+    flex-direction:column;
+    gap:20px;
+}
+
+.details-row{
+    display:flex;
+    gap:15px;
+    overflow-x:auto;
+}
+
+.detail-box{
+    min-width:180px;
+    background:#0f172a;
+    padding:15px;
+    border-radius:10px;
+    transition:0.3s;
+    flex-shrink:0;
+}
+
+.detail-box:hover{
+    transform:scale(1.05);
+    background:#1e40af;
+}
+
+.label{
+    font-size:12px;
+    color:#9ca3af;
+}
+
+.value{
+    font-size:16px;
+    font-weight:bold;
+}
+
+.section-title{
+    color:#cbd5f5;
+    margin-bottom:5px;
+}
+
+/* INSIGHTS */
+.insight-grid, .action-grid{
+    display:grid;
+    grid-template-columns:repeat(auto-fit, minmax(200px,1fr));
+    gap:15px;
+}
+
+.insight-box{
+    background:#0f172a;
+    padding:15px;
+    border-radius:10px;
+    border-left:4px solid #ff4d4d;
+    transition:0.3s;
+}
+
+.action-box{
+    background:#0f172a;
+    padding:15px;
+    border-radius:10px;
+    border-left:4px solid #4CAF50;
+    transition:0.3s;
+}
+
+.insight-box:hover{
+    transform:translateY(-5px);
+    background:#1e40af;
+}
+
+.action-box:hover{
+    transform:scale(1.05);
+    background:#2563eb;
+}
+
+</style>
 </head>
 
 <body>
 
-<div class="dashboard-container">
+<h1>📊 Live Customer Dashboard</h1>
 
-<h1>📊 Customer Churn Analytics Dashboard</h1>
+<div class="container">
 
-<div class="prediction-card">
+<!-- PREDICTION -->
+<div class="card full">
 
 <h2>Latest Prediction</h2>
 
 {% if last_prediction is not none %}
 
 {% if last_prediction == 1 %}
-<h3 style="color:#ff5252;">⚠ Customer Likely to CHURN</h3>
+<p style="color:#ff4d4d;">⚠ Customer Likely to CHURN</p>
 {% else %}
-<h3 style="color:#4CAF50;">✅ Customer Will STAY</h3>
+<p style="color:#4CAF50;">✅ Customer Will STAY</p>
 {% endif %}
 
-<p>Prediction Confidence: <b>{{last_probability}}%</b></p>
+<p>Confidence: <b>{{last_probability}}%</b></p>
+
+<div style="background:#333; border-radius:10px;">
+<div style="
+width: {{last_probability}}%;
+background: {{ '#ff4d4d' if last_prediction == 1 else '#4CAF50' }};
+padding:10px;
+border-radius:10px;
+text-align:center;">
+{{last_probability}}%
+</div>
+</div>
 
 {% else %}
+<p>No prediction yet</p>
+{% endif %}
 
-<p>No prediction made yet.</p>
+</div>
+
+<!-- CUSTOMER DETAILS -->
+<div class="card">
+
+<h3>📋 Customer Details</h3>
+
+{% if last_input %}
+
+<div class="details-section">
+
+<!-- PERSONAL -->
+<div>
+<div class="section-title">👤 Personal</div>
+
+<div class="details-row">
+{% for key, value in last_input.items() %}
+{% if key in ['gender','SeniorCitizen','Partner','Dependents'] %}
+<div class="detail-box">
+<p class="label">{{key}}</p>
+<p class="value">{{value}}</p>
+</div>
+{% endif %}
+{% endfor %}
+</div>
+</div>
+
+<!-- SERVICES -->
+<div>
+<div class="section-title">📡 Services</div>
+
+<div class="details-row">
+{% for key, value in last_input.items() %}
+{% if key in ['InternetService','OnlineSecurity','OnlineBackup','DeviceProtection','TechSupport','StreamingTV','StreamingMovies'] %}
+<div class="detail-box">
+<p class="label">{{key}}</p>
+<p class="value">{{value}}</p>
+</div>
+{% endif %}
+{% endfor %}
+</div>
+</div>
+
+<!-- BILLING -->
+<div>
+<div class="section-title">💳 Billing</div>
+
+<div class="details-row">
+{% for key, value in last_input.items() %}
+{% if key in ['MonthlyCharges','TotalCharges','Contract','PaymentMethod','PaperlessBilling','tenure'] %}
+<div class="detail-box">
+<p class="label">{{key}}</p>
+<p class="value">{{value}}</p>
+</div>
+{% endif %}
+{% endfor %}
+</div>
+</div>
+
+</div>
 
 {% endif %}
 
 </div>
 
-<div class="dashboard-grid">
+<!-- CHARTS -->
+<div class="card">
 
-<div class="chart-card">
-<h3>Churn Distribution (Live Predictions)</h3>
-<canvas id="churnChart"></canvas>
-</div>
+<h3>📊 Prediction Insights</h3>
 
-<div class="chart-card">
-<h3>Monthly Charges vs Churn</h3>
-<canvas id="chargesChart"></canvas>
-</div>
+<div style="display:grid; grid-template-columns:1fr; gap:20px;">
 
-<div class="chart-card">
-<h3>Contract Type</h3>
-<canvas id="contractChart"></canvas>
-</div>
-
-<div class="chart-card">
-<h3>Tenure Distribution</h3>
-<canvas id="tenureChart"></canvas>
-</div>
-
-<div class="chart-card">
-<h3>Internet Service</h3>
-<canvas id="internetChart"></canvas>
-</div>
-
-<div class="chart-card">
-<h3>Payment Method</h3>
-<canvas id="paymentChart"></canvas>
-</div>
+<canvas id="confidenceChart"></canvas>
+<canvas id="riskChart"></canvas>
+<canvas id="compareChart"></canvas>
 
 </div>
 
 </div>
 
-<center style="margin-top:40px;">
-<a href="/" class="interactive-btn">⬅ Back to Prediction</a>
+<!-- WHY -->
+<div class="card full">
+
+<h3>🧠 Why this prediction?</h3>
+
+<div class="insight-grid">
+<div class="insight-box">📉 Low Tenure → Higher churn risk</div>
+<div class="insight-box">💰 High charges → Dissatisfaction</div>
+<div class="insight-box">🔐 No security → Risk increases</div>
+</div>
+
+</div>
+
+<!-- ACTION -->
+<div class="card full">
+
+<h3>💡 Suggested Actions</h3>
+
+<div class="action-grid">
+<div class="action-box">🎯 Offer discounts</div>
+<div class="action-box">🎁 Loyalty rewards</div>
+<div class="action-box">📦 Bundle services</div>
+</div>
+
+</div>
+
+</div>
+
+<br><br>
+
+<center>
+<a href="/" style="padding:10px 20px; background:#6a11cb; color:white; border-radius:20px;">
+⬅ Back
+</a>
 </center>
-
 
 <script>
 
-/* ===========================
-   Data coming from Flask
-   =========================== */
+const confidence = parseFloat("{{ last_probability | default(0) }}");
+const churnVal = parseFloat("{{ churn_val | default(0) }}");
+const stayVal = parseFloat("{{ stay_val | default(0) }}");
 
-const churnData = {{ churn | tojson }};
-const contractData = {{ contract | tojson }};
-const internetData = {{ internet | tojson }};
-
-
-/* ===========================
-   Churn Distribution (Live)
-   =========================== */
-
-new Chart(document.getElementById("churnChart"), {
-
-type: "pie",
-
-data: {
-labels: Object.keys(churnData),
-datasets: [{
-data: Object.values(churnData),
-backgroundColor:["#4CAF50","#FF5252"]
+/* CONFIDENCE */
+new Chart(document.getElementById("confidenceChart"), {
+type:"bar",
+data:{
+labels:["Confidence"],
+datasets:[{
+data:[confidence],
+backgroundColor:"#4CAF50"
 }]
-}
-
+},
+options:{ scales:{y:{max:100}} }
 });
 
+/* RISK */
+let riskColor = "#4CAF50";
+if(confidence > 70) riskColor="#ff4d4d";
+else if(confidence > 40) riskColor="#FFA500";
 
-/* ===========================
-   Contract Type
-   =========================== */
-
-new Chart(document.getElementById("contractChart"),{
-
+new Chart(document.getElementById("riskChart"), {
 type:"doughnut",
-
 data:{
-labels:Object.keys(contractData),
 datasets:[{
-data:Object.values(contractData),
-backgroundColor:["#36A2EB","#FF6384","#FFCE56"]
+data:[confidence,100-confidence],
+backgroundColor:[riskColor,"#333"]
 }]
-}
-
+},
+options:{ cutout:"70%" }
 });
 
-
-/* ===========================
-   Internet Service
-   =========================== */
-
-new Chart(document.getElementById("internetChart"),{
-
-type:"pie",
-
-data:{
-labels:Object.keys(internetData),
-datasets:[{
-data:Object.values(internetData),
-backgroundColor:["#3498db","#e74c3c","#2ecc71"]
-}]
-}
-
-});
-
-
-/* ===========================
-   Monthly Charges vs Churn
-   =========================== */
-
-new Chart(document.getElementById("chargesChart"), {
-
-type: "bar",
-
-data:{
-labels:["Low","Medium","High"],
-datasets:[{
-label:"Churn Rate",
-data:[15,35,60],
-backgroundColor:"#667eea"
-}]
-}
-
-});
-
-
-/* ===========================
-   Tenure Distribution
-   =========================== */
-
-new Chart(document.getElementById("tenureChart"),{
-
+/* COMPARE */
+new Chart(document.getElementById("compareChart"), {
 type:"bar",
-
 data:{
-labels:["0-12","12-24","24-48","48+"],
+labels:["Churn","Stay"],
 datasets:[{
-label:"Customers",
-data:[120,200,150,80],
-backgroundColor:"#8e44ad"
+data:[churnVal, stayVal],
+backgroundColor:["#ff4d4d","#4CAF50"]
 }]
-}
-
-});
-
-
-/* ===========================
-   Payment Method
-   =========================== */
-
-new Chart(document.getElementById("paymentChart"),{
-
-type:"bar",
-
-data:{
-labels:["Electronic","Bank Transfer","Credit Card","Mailed"],
-datasets:[{
-label:"Customers",
-data:[300,200,150,100],
-backgroundColor:"#f39c12"
-}]
-}
-
+},
+options:{ scales:{y:{max:100}} }
 });
 
 </script>

@@ -1,83 +1,73 @@
 <!DOCTYPE html>
 <html>
 <head>
-
 <meta charset="UTF-8">
 <title>Prediction Result</title>
 
 <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 
-<link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
-
 <style>
-
-.result-container{
-display:flex;
-justify-content:center;
-align-items:center;
-height:100vh;
+body{
+    text-align:center;
+    font-family:Arial;
+    background:#0f172a;
+    color:white;
 }
 
-.result-card{
-
-width:500px;
-padding:40px;
-border-radius:20px;
-text-align:center;
-background:#1e293b;
-box-shadow:0 10px 30px rgba(0,0,0,0.5);
-
+/* MAIN CARD */
+.card{
+    background:#1e293b;
+    padding:30px;
+    margin:40px auto;
+    width:420px;
+    border-radius:15px;
+    box-shadow:0 10px 25px rgba(0,0,0,0.5);
 }
 
-.result-title{
-font-size:28px;
-margin-bottom:20px;
+/* BUTTONS */
+a{
+    display:inline-block;
+    margin:10px;
+    padding:10px 20px;
+    background:#6a11cb;
+    color:white;
+    text-decoration:none;
+    border-radius:20px;
 }
 
-.result-icon{
-font-size:40px;
-margin-bottom:10px;
-}
-
-.confidence{
-margin-top:10px;
-font-size:18px;
-}
-
-.chart-box{
-width:260px;
-margin:30px auto;
-}
-
+/* PROGRESS BAR */
 .progress{
-width:100%;
-background:#333;
-border-radius:20px;
-overflow:hidden;
-margin-top:20px;
+    background:#333;
+    border-radius:10px;
+    overflow:hidden;
+    margin:15px 0;
 }
 
 .progress-fill{
-height:16px;
-background:linear-gradient(90deg,#6a11cb,#2575fc);
-width:0%;
-transition:1.2s;
+    height:20px;
+    text-align:center;
+    color:white;
+    line-height:20px;
 }
 
-.buttons{
-margin-top:25px;
+/* SUGGESTIONS */
+.suggestions{
+    margin-top:20px;
+    text-align:left;
 }
 
-.buttons a{
+.suggestion-box{
+    background:#0f172a;
+    padding:10px;
+    margin:8px 0;
+    border-radius:8px;
+    border-left:4px solid #4CAF50;
+    transition:0.3s;
+}
 
-display:inline-block;
-margin:8px;
-padding:10px 20px;
-border-radius:25px;
-background:#6a11cb;
-color:white;
-text-decoration:none;
-
+.suggestion-box:hover{
+    transform:scale(1.03);
+    background:#1e40af;
 }
 
 </style>
@@ -86,80 +76,76 @@ text-decoration:none;
 
 <body>
 
-<div class="result-container">
+<div class="card">
 
-<div class="result-card">
+<h2>📊 Prediction Result</h2>
 
-<h2 class="result-title">Prediction Result</h2>
-
-<div class="result-icon">
-
-{% if "CHURN" in output1 %}
-⚠️
+<!-- Prediction -->
+{% if "CHURN" in output %}
+<h3 style="color:#ff4d4d;">⚠ {{output}}</h3>
 {% else %}
-✅
+<h3 style="color:#4CAF50;">✅ {{output}}</h3>
 {% endif %}
 
-</div>
+<p>Confidence: <b>{{confidence}}%</b></p>
 
-<h3>{{output1}}</h3>
-
-<p class="confidence">{{output2}}</p>
-
+<!-- Progress Bar -->
 <div class="progress">
-<div id="progressBar" class="progress-fill"></div>
+<div class="progress-fill"
+style="
+width: {{confidence}}%;
+background: {{ '#ff4d4d' if 'CHURN' in output else '#4CAF50' }};
+">
+{{confidence}}%
+</div>
 </div>
 
-<div class="chart-box">
-<canvas id="probChart"></canvas>
+
+<!-- Chart -->
+<canvas id="chart" width="250"></canvas>
+
+<!-- SMART SUGGESTIONS -->
+<div class="suggestions">
+
+<h3>💡 Smart Suggestions</h3>
+
+{% for s in suggestions %}
+<div class="suggestion-box">
+✔ {{s}}
+</div>
+{% endfor %}
+
 </div>
 
-<div class="buttons">
+<br>
 
 <a href="/">⬅ Predict Again</a>
-
 <a href="/dashboard">📊 View Dashboard</a>
-
-</div>
-
-</div>
 
 </div>
 
 <script>
 
-/* Progress bar animation */
+// SAFE values
+const churn = {{ churn | default(0) }};
+const stay = {{ stay | default(0) }};
 
-setTimeout(()=>{
-document.getElementById("progressBar").style.width="{{probability}}%";
-},300);
-
-/* Chart */
-
-const churn = {{probability}};
-const stay = {{stay}};
-
-new Chart(document.getElementById("probChart"),{
-
-type:'doughnut',
-
-data:{
-labels:['Churn Probability','Stay Probability'],
-datasets:[{
-data:[churn, stay],
-backgroundColor:['#ff4d4d','#4CAF50']
+// Chart
+new Chart(document.getElementById("chart"), {
+type: "doughnut",
+data: {
+labels: ["Churn", "Stay"],
+datasets: [{
+data: [churn, stay],
+backgroundColor: ["#ff4d4d", "#4CAF50"]
 }]
 },
-
 options:{
 cutout:'70%',
 plugins:{
-legend:{
-position:'bottom'
+legend:{ position:'bottom' }
 }
 }
-}
-
 });
 
 </script>
