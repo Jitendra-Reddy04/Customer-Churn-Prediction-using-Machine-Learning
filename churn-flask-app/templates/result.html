@@ -11,62 +11,73 @@
 
 <style>
 
-.result-wrapper{
-max-width:700px;
-margin:auto;
-margin-top:40px;
+.result-container{
+display:flex;
+justify-content:center;
+align-items:center;
+height:100vh;
 }
 
 .result-card{
-text-align:center;
+
+width:500px;
 padding:40px;
 border-radius:20px;
-background:#1e1e2f;
-box-shadow:0 20px 40px rgba(0,0,0,0.6);
+text-align:center;
+background:#1e293b;
+box-shadow:0 10px 30px rgba(0,0,0,0.5);
+
 }
 
-.result-icon{
-font-size:60px;
+.result-title{
+font-size:28px;
 margin-bottom:20px;
 }
 
-/* Progress bar */
-
-.progress{
-width:100%;
-max-width:500px;
-margin:auto;
-background:#333;
-border-radius:30px;
-overflow:hidden;
-margin-top:25px;
+.result-icon{
+font-size:40px;
+margin-bottom:10px;
 }
 
-.progress-fill{
-height:18px;
-background:linear-gradient(90deg,#6a11cb,#2575fc);
-width:0;
-transition:width 1.5s ease;
+.confidence{
+margin-top:10px;
+font-size:18px;
 }
-
-/* Gauge */
 
 .chart-box{
-width:250px;
+width:260px;
 margin:30px auto;
 }
 
-.button-group{
+.progress{
+width:100%;
+background:#333;
+border-radius:20px;
+overflow:hidden;
+margin-top:20px;
+}
+
+.progress-fill{
+height:16px;
+background:linear-gradient(90deg,#6a11cb,#2575fc);
+width:0%;
+transition:1.2s;
+}
+
+.buttons{
 margin-top:25px;
 }
 
-.button-group a{
-margin:10px;
-padding:12px 25px;
+.buttons a{
+
+display:inline-block;
+margin:8px;
+padding:10px 20px;
 border-radius:25px;
 background:#6a11cb;
 color:white;
 text-decoration:none;
+
 }
 
 </style>
@@ -75,13 +86,11 @@ text-decoration:none;
 
 <body>
 
-<button class="toggle-mode" onclick="toggleMode()">🌙 Toggle Mode</button>
-
-<div class="result-wrapper">
-
-<h2 style="text-align:center;">Prediction Result</h2>
+<div class="result-container">
 
 <div class="result-card">
+
+<h2 class="result-title">Prediction Result</h2>
 
 <div class="result-icon">
 
@@ -95,19 +104,17 @@ text-decoration:none;
 
 <h3>{{output1}}</h3>
 
-<p>{{output2}}</p>
+<p class="confidence">{{output2}}</p>
 
 <div class="progress">
 <div id="progressBar" class="progress-fill"></div>
 </div>
 
-<p style="margin-top:10px;">Probability Score: <b>{{probability}}%</b></p>
-
 <div class="chart-box">
 <canvas id="probChart"></canvas>
 </div>
 
-<div class="button-group">
+<div class="buttons">
 
 <a href="/">⬅ Predict Again</a>
 
@@ -121,37 +128,35 @@ text-decoration:none;
 
 <script>
 
-function toggleMode(){
-document.body.classList.toggle("light-mode");
-}
-
-/* Animate progress bar */
+/* Progress bar animation */
 
 setTimeout(()=>{
 document.getElementById("progressBar").style.width="{{probability}}%";
 },300);
 
+/* Chart */
 
-/* Gauge Chart */
-
-const prob = {{probability}};
+const churn = {{probability}};
+const stay = {{stay}};
 
 new Chart(document.getElementById("probChart"),{
 
 type:'doughnut',
 
 data:{
-labels:['Risk','Safe'],
+labels:['Churn Probability','Stay Probability'],
 datasets:[{
-data:[prob,100-prob],
-backgroundColor:['#ff5252','#4CAF50']
+data:[churn, stay],
+backgroundColor:['#ff4d4d','#4CAF50']
 }]
 },
 
 options:{
 cutout:'70%',
 plugins:{
-legend:{display:false}
+legend:{
+position:'bottom'
+}
 }
 }
 
